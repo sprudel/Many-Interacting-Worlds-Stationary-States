@@ -1,11 +1,12 @@
-FROM ubuntu:22.04
+FROM ubuntu:20.04
 ARG USER
-RUN apt-get update
-RUN apt-get install -y \
-    python3 \
-    cython3 \
-    jupyter \
-    jupyter-notebook
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    python3 jupyter jupyter-notebook  \
+    python3-sympy python3-numpy python3-matplotlib python3-scipy \
+    cython3 build-essential python3-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir /workspace
 RUN adduser jupyter-user --uid ${USER}
