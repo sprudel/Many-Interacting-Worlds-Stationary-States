@@ -20,8 +20,7 @@ cdef class Pgaussinterpolation(MIWBase_pval):
     cdef np.float64_t [:] pos_between
     cdef np.int_t[:] phase
     cdef np.float64_t [:] hs
-    cdef np.float64_t [:] hs_cache
-    
+
     cdef size_t n_kernel
     cdef size_t recursive_interpolation
     
@@ -50,7 +49,6 @@ cdef class Pgaussinterpolation(MIWBase_pval):
         self.pbetween = np.zeros(worlds.shape[0]-1, dtype=np.float64)
         self.pos_between = np.zeros(worlds.shape[0]-1, dtype=np.float64)
         self.hs = np.ones(worlds.shape[0]-1, dtype=np.float64)
-        self.hs_cache = np.ones(worlds.shape[0]-1, dtype=np.float64)
         self.n_kernel = worlds.shape[0]-1-2*self.n_nodes
         self.recursive_interpolation = recursive_interpolation
                
@@ -101,7 +99,7 @@ cdef class Pgaussinterpolation(MIWBase_pval):
         for i in range(self.N-1):
             self.pos_between[i] = (self.worlds[i+1]+self.worlds[i])/2.
         for i in range(self.N-1):
-            self.pbetween[i] = 1./(<np.float64_t>self.N)/(self.worlds[i+1]-self.worlds[i])*delta(self.phase[i],self.phase[i+1])        
+            self.pbetween[i] = 1./(<np.float64_t>self.N)/(self.worlds[i+1]-self.worlds[i])*delta(self.phase[i],self.phase[i+1])
     
     cdef int _update_pvals(self):
         #calculate p values between worlds
@@ -110,11 +108,8 @@ cdef class Pgaussinterpolation(MIWBase_pval):
         cdef size_t i,j
         for i in range(self.recursive_interpolation):
             for j in range(self.N-1):
-                self.hs_cache[j] = self.hs[j]*self.p_eval(self.pos_between[j])/self.pbetween[j]
-                #self.hs[j] = fabs(K(0)/(self.pbetween[j]-self.p_eval(self.pos_between[j])+K(0)/self.hs[j]))*(-1+delta(self.phase[j],self.phase[j+1])*2)
-            for j in range(self.N-1):
-                self.hs[j] = self.hs_cache[j]
-        
+                self.hs[j] = fabs(K(0)/(self.pbetween[j]-self.p_eval(self.pos_between[j])+K(0)/self.hs[j]))*(-1+delta(self.phase[j],self.phase[j+1])*2)
+
         #interpolate dervivates with gauss interpolation
         for i in range(self.N):
             self.pvals[i,0] = self.p_eval(self.worlds[i])
